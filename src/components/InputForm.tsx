@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { FileUp, Send, BookOpen, Target } from "lucide-react";
+import { FileUp, Send, BookOpen, Target, GraduationCap } from "lucide-react";
 
 export const InputForm = () => {
   return (
