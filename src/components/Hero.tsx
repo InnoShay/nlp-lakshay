@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { GraduationCap, Brain, Sparkles, ScrollText } from "lucide-react";
-import { Navigation } from "./Navigation";
+import { GraduationCap, Brain, Sparkles, ChevronDown } from "lucide-react";
 
 export const Hero = () => {
   return (
     <section className="min-h-screen relative bg-hero-pattern bg-cover bg-center bg-no-repeat">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-      <Navigation />
       
       <div className="relative z-10 flex flex-col justify-center items-center text-center px-4 min-h-screen">
         <motion.div 
@@ -26,10 +24,7 @@ export const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-5xl md:text-7xl font-bold text-primary mb-6 tracking-tight"
-          style={{ 
-            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-            fontFamily: "'Press Start 2P', cursive"
-          }}
+          style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
         >
           AI-Powered Course
           <br />
@@ -54,15 +49,11 @@ export const Hero = () => {
         >
           <Button 
             size="lg"
-            className="bg-primary/90 hover:bg-primary/80 text-white px-12 py-8 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 relative overflow-hidden border-2 border-primary/20"
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
             onClick={() => document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' })}
-            style={{
-              background: "linear-gradient(45deg, #ea384c 30%, #ff6b81 90%)",
-              boxShadow: "0 4px 20px rgba(234, 56, 76, 0.25)"
-            }}
           >
-            <ScrollText className="w-6 h-6 animate-bounce" />
-            <span className="font-semibold tracking-wide">Begin Your Journey</span>
+            Get Started
+            <ChevronDown className="w-5 h-5 animate-bounce" />
           </Button>
         </motion.div>
       </div>
