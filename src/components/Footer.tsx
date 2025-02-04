@@ -1,19 +1,22 @@
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter, Heart } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="bg-secondary text-accent py-12">
+    <footer className="bg-secondary text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">Course Recommender</h3>
-            <p className="text-accent/80">
+            <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+              <Heart className="w-5 h-5" />
+              Course Recommender
+            </h3>
+            <p className="text-white/80">
               Powered by advanced NLP technology to help you find the perfect courses.
             </p>
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-4 text-primary">Quick Links</h3>
             <ul className="space-y-2">
               <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
@@ -22,22 +25,22 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-4">Connect</h3>
+            <h3 className="text-xl font-bold mb-4 text-primary">Connect</h3>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="hover:text-primary transition-colors transform hover:scale-110">
                 <Twitter className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="hover:text-primary transition-colors transform hover:scale-110">
                 <Linkedin className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a href="#" className="hover:text-primary transition-colors transform hover:scale-110">
                 <Github className="w-6 h-6" />
               </a>
             </div>
           </div>
         </div>
         
-        <div className="border-t border-accent/20 mt-8 pt-8 text-center text-accent/60">
+        <div className="border-t border-primary/20 mt-8 pt-8 text-center text-white/60">
           <p>&copy; 2024 Course Recommender. All rights reserved.</p>
         </div>
       </div>

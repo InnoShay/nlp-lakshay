@@ -25,16 +25,16 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8B0000",
+          DEFAULT: "#ea384c",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#1A1A1A",
-          foreground: "#F5F5DC",
+          DEFAULT: "#000000e6",
+          foreground: "#ea384c",
         },
         accent: {
-          DEFAULT: "#F5F5DC",
-          foreground: "#1A1A1A",
+          DEFAULT: "#1a1a1a",
+          foreground: "#ea384c",
         },
       },
       keyframes: {
@@ -56,10 +56,24 @@ export default {
             opacity: "1",
           },
         },
+        "scale-up": {
+          "0%": {
+            transform: "scale(0.95)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
+        "scale-up": "scale-up 0.4s ease-out",
+      },
+      backgroundImage: {
+        'hero-pattern': "url('/lovable-uploads/2bdc917f-72b6-45af-8f24-6499945e4d11.png')",
       },
     },
   },
