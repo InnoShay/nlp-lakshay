@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -26,10 +27,12 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "#ea384c",
+          light: "#ff6b7d",
+          dark: "#d41f33",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#000000e6",
+          DEFAULT: "#1A1F2C",
           foreground: "#ea384c",
         },
         accent: {
@@ -66,14 +69,31 @@ export default {
             opacity: "1",
           },
         },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
+        "pulse-glow": {
+          "0%, 100%": {
+            opacity: "1",
+            boxShadow: "0 0 20px rgba(234, 56, 76, 0.5)",
+          },
+          "50%": {
+            opacity: "0.8",
+            boxShadow: "0 0 30px rgba(234, 56, 76, 0.8)",
+          },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "scale-up": "scale-up 0.4s ease-out",
-      },
-      backgroundImage: {
-        'hero-pattern': "url('/lovable-uploads/2bdc917f-72b6-45af-8f24-6499945e4d11.png')",
+        "float": "float 3s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
   },
