@@ -66,7 +66,7 @@ export const InputForm = () => {
   };
 
   return (
-    <section id="input-form" className="py-20 px-4 bg-accent min-h-screen">
+    <section id="input-form" className="py-20 px-4 bg-background">
       <div className="max-w-3xl mx-auto">
         <motion.form
           onSubmit={handleSubmit}
@@ -74,7 +74,7 @@ export const InputForm = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-secondary/95 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-primary/20"
+          className="glass-card p-8 rounded-2xl"
         >
           <h2 className="text-3xl font-bold text-primary mb-8 flex items-center gap-3">
             <BookOpen className="w-8 h-8" />
@@ -83,7 +83,7 @@ export const InputForm = () => {
           
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-primary/90 mb-2 flex items-center gap-2">
+              <label className="block text-sm font-medium text-foreground/80 mb-2 flex items-center gap-2">
                 <GraduationCap className="w-4 h-4" />
                 Educational Background
               </label>
@@ -91,13 +91,13 @@ export const InputForm = () => {
                 value={education}
                 onChange={(e) => setEducation(e.target.value)}
                 placeholder="Enter your qualifications, skills, and relevant experience..."
-                className="w-full bg-accent/10 border-primary/20 text-white placeholder:text-white/50 min-h-[120px]"
+                className="w-full bg-background/50 dark:bg-white/5 border-primary/20 placeholder:text-foreground/50 min-h-[120px]"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-primary/90 mb-2 flex items-center gap-2">
+              <label className="block text-sm font-medium text-foreground/80 mb-2 flex items-center gap-2">
                 <Target className="w-4 h-4" />
                 Future Goals
               </label>
@@ -105,7 +105,7 @@ export const InputForm = () => {
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
                 placeholder="What are your career aspirations and learning objectives?"
-                className="w-full bg-accent/10 border-primary/20 text-white placeholder:text-white/50 min-h-[120px]"
+                className="w-full bg-background/50 dark:bg-white/5 border-primary/20 placeholder:text-foreground/50 min-h-[120px]"
                 required
               />
             </div>
@@ -113,7 +113,7 @@ export const InputForm = () => {
             <Button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 text-white rounded-xl py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
               size="lg"
             >
               {isLoading ? "Getting Recommendations..." : "Get Recommendations"}
