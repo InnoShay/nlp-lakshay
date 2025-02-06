@@ -1,12 +1,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { BookOpen, Send, Target, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const InputForm = () => {
   const [education, setEducation] = useState("");
@@ -20,21 +20,27 @@ export const InputForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("YOUR_BACKEND_API_ENDPOINT", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ education, goals }),
-      });
+      // For now, we'll fetch all courses and do a simple matching
+      // In a real recommendation system, you'd want more sophisticated matching
+      const { data: courses, error } = await supabase
+        .from('courses')
+        .select('*');
 
-      if (!response.ok) throw new Error("Failed to get recommendations");
+      if (error) throw error;
 
-      const data = await response.json();
-      // Store recommendations in localStorage to access them in the recommendations page
-      localStorage.setItem("recommendations", JSON.stringify(data));
+      // Simple matching based on skills and prerequisites
+      const recommendations = courses
+        .map(course => ({
+          ...course,
+          similarity_score: calculateSimilarity(course, education, goals)
+        }))
+        .sort((a, b) => b.similarity_score - a.similarity_score)
+        .slice(0, 3); // Get top 3 recommendations
+
+      localStorage.setItem("recommendations", JSON.stringify(recommendations));
       navigate("/recommendations");
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to get recommendations. Please try again.",
@@ -43,6 +49,20 @@ export const InputForm = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Simple similarity calculation based on keyword matching
+  const calculateSimilarity = (course: any, education: string, goals: string) => {
+    const combinedUserInput = (education + " " + goals).toLowerCase();
+    const courseText = (course.title + " " + course.description + " " + course.skills).toLowerCase();
+    
+    // Count how many course keywords appear in user input
+    const courseWords = courseText.split(/\W+/);
+    const matchingWords = courseWords.filter(word => 
+      word.length > 3 && combinedUserInput.includes(word)
+    );
+    
+    return matchingWords.length / courseWords.length;
   };
 
   return (
