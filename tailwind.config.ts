@@ -26,19 +26,29 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#ea384c",
-          light: "#ff6b7d",
-          dark: "#d41f33",
+          DEFAULT: "#8B5CF6", // Vibrant purple
+          light: "#A78BFA",
+          dark: "#7C3AED",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#1A1F2C",
-          foreground: "#ea384c",
+          DEFAULT: "#F97316", // Vibrant orange
+          foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#1a1a1a",
-          foreground: "#ea384c",
+          DEFAULT: "#0EA5E9", // Ocean blue
+          foreground: "#FFFFFF",
         },
+        success: {
+          DEFAULT: "#10B981",
+          foreground: "#FFFFFF",
+        },
+      },
+      backgroundImage: {
+        'hero-pattern': "linear-gradient(to right bottom, rgba(139, 92, 246, 0.8), rgba(249, 115, 22, 0.8)), url('/placeholder.svg')",
+        'gradient-primary': "linear-gradient(to right, #8B5CF6, #F97316)",
+        'gradient-dark': "linear-gradient(to right bottom, #1F2937, #111827)",
+        'gradient-light': "linear-gradient(to right bottom, #F3F4F6, #E5E7EB)",
       },
       keyframes: {
         "fade-up": {
@@ -80,11 +90,11 @@ export default {
         "pulse-glow": {
           "0%, 100%": {
             opacity: "1",
-            boxShadow: "0 0 20px rgba(234, 56, 76, 0.5)",
+            boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)",
           },
           "50%": {
             opacity: "0.8",
-            boxShadow: "0 0 30px rgba(234, 56, 76, 0.8)",
+            boxShadow: "0 0 30px rgba(139, 92, 246, 0.8)",
           },
         },
       },

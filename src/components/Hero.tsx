@@ -8,11 +8,11 @@ export const Hero = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <section className="min-h-screen relative bg-hero-pattern bg-cover bg-center bg-no-repeat">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <section className="relative min-h-screen">
+      <div className="absolute inset-0 bg-gradient-dark dark:opacity-90 light:opacity-0 transition-opacity duration-500"></div>
       
       <motion.button
-        className="absolute top-4 right-4 z-20 p-2 rounded-full glass-morphism"
+        className="absolute top-4 right-4 z-20 p-3 rounded-full glass-card hover-scale"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -29,18 +29,18 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 mb-6"
+          className="flex items-center gap-6 mb-8"
         >
-          <GraduationCap className="w-10 h-10 text-primary floating-animation" />
-          <Brain className="w-10 h-10 text-primary floating-animation delay-100" />
-          <Sparkles className="w-10 h-10 text-primary floating-animation delay-200" />
+          <GraduationCap className="w-12 h-12 text-primary floating-animation" />
+          <Brain className="w-12 h-12 text-secondary floating-animation delay-100" />
+          <Sparkles className="w-12 h-12 text-accent floating-animation delay-200" />
         </motion.div>
 
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold gradient-text mb-6 tracking-tight"
+          className="text-5xl md:text-7xl font-bold gradient-text mb-8 tracking-tight"
         >
           AI-Powered Course
           <br />
@@ -51,7 +51,7 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-xl md:text-2xl text-white/90 mb-12 max-w-2xl leading-relaxed glass-morphism p-6 rounded-xl"
+          className="text-xl md:text-2xl text-foreground/90 mb-12 max-w-2xl leading-relaxed glass-card p-8 rounded-2xl"
         >
           Get personalized course suggestions based on your qualifications and goals, powered by advanced NLP technology.
         </motion.p>
@@ -60,15 +60,14 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="space-y-6"
         >
           <Button 
             size="lg"
-            className="bg-primary hover:bg-primary-dark text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 button-hover-animation"
+            className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 button-hover-animation"
             onClick={() => document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Get Started
-            <ChevronDown className="w-5 h-5 animate-bounce" />
+            <ChevronDown className="w-5 h-5 ml-2 animate-bounce" />
           </Button>
         </motion.div>
       </div>
