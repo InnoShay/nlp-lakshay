@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,23 +26,26 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8B5CF6", // Vibrant purple
+          DEFAULT: "#8B5CF6",
           light: "#A78BFA",
           dark: "#7C3AED",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#6366F1", // Indigo
+          DEFAULT: "#6366F1",
           foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#9333EA", // Deep purple
+          DEFAULT: "#9333EA",
           foreground: "#FFFFFF",
         },
         success: {
           DEFAULT: "#10B981",
           foreground: "#FFFFFF",
         },
+      },
+      fontFamily: {
+        sans: ['Inter var', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-primary': "linear-gradient(to right, #8B5CF6, #6366F1)",

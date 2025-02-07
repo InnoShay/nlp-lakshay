@@ -8,19 +8,30 @@ export const Hero = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <section className="relative min-h-screen">
-      <div className="absolute inset-0 bg-gradient-dark dark:opacity-90 light:opacity-0 transition-opacity duration-500"></div>
+    <section className="relative min-h-screen overflow-hidden">
+      {/* Background Images with Transitions */}
+      <div className="absolute inset-0 transition-opacity duration-700">
+        <div 
+          className="absolute inset-0 bg-[url('/lovable-uploads/3aada347-1304-4cad-aa56-83c587319e44.png')] bg-cover bg-center opacity-50 dark:opacity-0 transition-opacity duration-700"
+          style={{ backgroundBlendMode: 'overlay' }}
+        />
+        <div 
+          className="absolute inset-0 bg-[url('/lovable-uploads/327ffa51-44b3-4545-9c5c-5cb17682ad0e.png')] bg-cover bg-center opacity-0 dark:opacity-30 transition-opacity duration-700"
+          style={{ backgroundBlendMode: 'overlay' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/10 to-background/95 dark:from-background/30 dark:to-background" />
+      </div>
       
       <motion.button
-        className="absolute top-4 right-4 z-20 p-3 rounded-full glass-card hover-scale"
+        className="absolute top-6 right-6 z-20 p-4 rounded-full glass-card hover:scale-105 transition-all duration-300"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       >
         {theme === "dark" ? (
-          <Sun className="w-6 h-6 text-primary" />
+          <Sun className="w-6 h-6 text-primary animate-spin-slow" />
         ) : (
-          <Moon className="w-6 h-6 text-primary" />
+          <Moon className="w-6 h-6 text-primary animate-spin-slow" />
         )}
       </motion.button>
       
@@ -29,18 +40,18 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-6 mb-8"
+          className="flex items-center gap-8 mb-12"
         >
-          <GraduationCap className="w-12 h-12 text-primary floating-animation" />
-          <Brain className="w-12 h-12 text-secondary floating-animation delay-100" />
-          <Sparkles className="w-12 h-12 text-accent floating-animation delay-200" />
+          <GraduationCap className="w-14 h-14 text-primary floating-animation" />
+          <Brain className="w-14 h-14 text-secondary floating-animation delay-100" />
+          <Sparkles className="w-14 h-14 text-accent floating-animation delay-200" />
         </motion.div>
 
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold gradient-text mb-8 tracking-tight"
+          className="text-6xl md:text-7xl font-bold gradient-text mb-12 tracking-tight leading-tight"
         >
           AI-Powered Course
           <br />
@@ -51,7 +62,7 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-xl md:text-2xl text-foreground/90 mb-12 max-w-2xl leading-relaxed glass-card p-8 rounded-2xl"
+          className="text-xl md:text-2xl text-foreground/90 mb-16 max-w-2xl leading-relaxed glass-card p-8 rounded-2xl shadow-xl"
         >
           Get personalized course suggestions based on your qualifications and goals, powered by advanced NLP technology.
         </motion.p>
@@ -63,7 +74,7 @@ export const Hero = () => {
         >
           <Button 
             size="lg"
-            className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 button-hover-animation"
+            className="bg-gradient-to-r from-primary via-secondary to-accent text-white px-10 py-7 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 button-hover-animation"
             onClick={() => document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Get Started
