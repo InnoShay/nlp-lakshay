@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Star, ArrowLeft } from "lucide-react";
 
 interface Recommendation {
   title: string;
@@ -27,7 +27,7 @@ const Recommendations = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-accent py-20 px-4">
+    <div className="min-h-screen bg-background py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -35,11 +35,11 @@ const Recommendations = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-primary mb-4">
-            Recommended Courses
+          <h1 className="text-4xl font-bold gradient-text mb-4">
+            Your Personalized Course Recommendations
           </h1>
-          <p className="text-white/80">
-            Based on your profile, here are the most suitable courses for you
+          <p className="text-muted-foreground text-lg">
+            Based on your profile, we've curated these courses just for you
           </p>
         </motion.div>
 
@@ -51,26 +51,26 @@ const Recommendations = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card className="p-6 bg-secondary/95 backdrop-blur-lg border border-primary/20 hover:shadow-xl transition-all duration-300">
+              <Card className="glass-card p-6 hover:scale-105 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-primary">
+                  <h3 className="text-xl font-semibold text-foreground">
                     {rec.title}
                   </h3>
-                  <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-full">
+                  <div className="flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
                     <Star className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium text-primary">
                       {(rec.similarity_score * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
-                <p className="text-white/80 mb-4">{rec.description}</p>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-primary/90">Skills:</h4>
+                <p className="text-muted-foreground mb-4">{rec.description}</p>
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground/90">Key Skills:</h4>
                   <div className="flex flex-wrap gap-2">
                     {rec.skills.split(",").map((skill, i) => (
                       <span
                         key={i}
-                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                        className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
                       >
                         {skill.trim()}
                       </span>
@@ -90,8 +90,9 @@ const Recommendations = () => {
         >
           <Button
             onClick={() => navigate("/")}
-            className="bg-primary hover:bg-primary/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground button-hover-animation"
           >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Get More Recommendations
           </Button>
         </motion.div>

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -32,11 +31,11 @@ export default {
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#F97316", // Vibrant orange
+          DEFAULT: "#6366F1", // Indigo
           foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#0EA5E9", // Ocean blue
+          DEFAULT: "#9333EA", // Deep purple
           foreground: "#FFFFFF",
         },
         success: {
@@ -45,8 +44,7 @@ export default {
         },
       },
       backgroundImage: {
-        'hero-pattern': "linear-gradient(to right bottom, rgba(139, 92, 246, 0.8), rgba(249, 115, 22, 0.8)), url('/placeholder.svg')",
-        'gradient-primary': "linear-gradient(to right, #8B5CF6, #F97316)",
+        'gradient-primary': "linear-gradient(to right, #8B5CF6, #6366F1)",
         'gradient-dark': "linear-gradient(to right bottom, #1F2937, #111827)",
         'gradient-light': "linear-gradient(to right bottom, #F3F4F6, #E5E7EB)",
       },

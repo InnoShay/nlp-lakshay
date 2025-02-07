@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,19 +81,27 @@
         transparent 40%
       );
   }
-
-  input, textarea {
-    @apply transition-all duration-300 focus:ring-2 focus:ring-primary/50;
-  }
 }
 
 @layer components {
+  .glass-card {
+    @apply backdrop-blur-md bg-white/90 dark:bg-black/30 border border-white/20 dark:border-white/10 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300;
+  }
+
   .glass-morphism {
     @apply backdrop-blur-xl bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-lg;
   }
 
-  .glass-card {
-    @apply backdrop-blur-md bg-white/90 dark:bg-black/30 border border-white/20 dark:border-white/10 rounded-xl shadow-xl;
+  .button-hover-animation {
+    @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+  }
+
+  .glass-morphism {
+    @apply backdrop-blur-xl bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10 shadow-lg;
   }
 
   .neo-button {
