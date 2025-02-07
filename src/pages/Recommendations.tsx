@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, ArrowLeft } from "lucide-react";
+import { Star, ArrowLeft, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface Recommendation {
   title: string;
@@ -16,8 +17,11 @@ interface Recommendation {
 const Recommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const storedRecs = localStorage.getItem("recommendations");
     if (!storedRecs) {
       navigate("/");
@@ -26,9 +30,26 @@ const Recommendations = () => {
     setRecommendations(JSON.parse(storedRecs));
   }, [navigate]);
 
+  if (!mounted) return null;
+
   return (
     <div className="min-h-screen bg-background py-20 px-4">
       <div className="max-w-6xl mx-auto">
+        <div className="fixed top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full w-10 h-10 bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5 text-primary transition-all" />
+            ) : (
+              <Moon className="h-5 w-5 text-primary transition-all" />
+            )}
+          </Button>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
