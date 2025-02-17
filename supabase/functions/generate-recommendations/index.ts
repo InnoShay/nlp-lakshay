@@ -14,32 +14,33 @@ serve(async (req) => {
   try {
     const { education, goals, fileContent } = await req.json()
 
-    // Prepare the prompt for Gemini
-    const prompt = `Based on the following information, recommend 8 most suitable courses with detailed information:
+    // Prepare the prompt for Gemini with more explicit instructions
+    const prompt = `You are a course recommendation system. Based on the following information, recommend 8 most suitable courses. 
     
     Education Background: ${education}
     Future Goals: ${goals}
     Additional Information: ${fileContent || 'No additional documents provided'}
     
-    Please provide the recommendations in the following JSON format:
+    IMPORTANT: Your response must be strictly formatted as a valid JSON object with this exact structure:
     {
-      "courses": [{
-        "title": "Course Title",
-        "description": "Detailed course description",
-        "skills": ["skill1", "skill2", "skill3"],
-        "prerequisites": ["prerequisite1", "prerequisite2"],
-        "price": "price in USD",
-        "difficulty": "beginner/intermediate/advanced",
-        "duration": "duration in weeks/months",
-        "roadmap": ["step1", "step2", "step3"]
-      }]
+      "courses": [
+        {
+          "title": "string",
+          "description": "string",
+          "skills": ["string"],
+          "prerequisites": ["string"],
+          "price": "string",
+          "difficulty": "beginner/intermediate/advanced",
+          "duration": "string",
+          "roadmap": ["string"]
+        }
+      ]
     }
     
-    Ensure each course is highly relevant to the user's background and goals. Include a comprehensive roadmap for each course.`
+    DO NOT include any additional text, explanations, or formatting - ONLY the JSON object.`
 
-    console.log('Making API request to Gemini...')
+    console.log('Making API request to Gemini with prompt:', prompt)
 
-    // Call Gemini API
     const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
       method: 'POST',
       headers: {
@@ -53,7 +54,7 @@ serve(async (req) => {
           }]
         }],
         generationConfig: {
-          temperature: 0.6,
+          temperature: 0.3, // Reduced temperature for more consistent output
           maxOutputTokens: 4096,
         },
       }),
@@ -67,28 +68,64 @@ serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('Gemini API response:', JSON.stringify(data))
+    console.log('Raw Gemini API response:', JSON.stringify(data))
 
-    if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+    if (!data || !data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
       console.error('Invalid response format from Gemini:', data)
       throw new Error('Invalid response format from Gemini API')
     }
 
-    try {
-      const recommendations = JSON.parse(data.candidates[0].content.parts[0].text)
+    // Get the raw text response from Gemini
+    const rawText = data.candidates[0].content.parts[0].text
+    console.log('Raw text from Gemini:', rawText)
 
-      if (!recommendations || !recommendations.courses || !Array.isArray(recommendations.courses)) {
-        console.error('Invalid recommendations format:', recommendations)
-        throw new Error('Invalid recommendations format')
+    try {
+      // Try to extract JSON from the response text
+      // First, try to find JSON-like content using regex
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : rawText;
+      
+      console.log('Attempting to parse JSON string:', jsonString)
+      
+      const recommendations = JSON.parse(jsonString)
+
+      // Validate the parsed JSON structure
+      if (!recommendations || !Array.isArray(recommendations.courses)) {
+        console.error('Invalid recommendations structure:', recommendations)
+        throw new Error('Invalid recommendations structure')
       }
 
+      // Validate each course object
+      const validatedCourses = recommendations.courses.map(course => {
+        if (!course.title || !course.description || !Array.isArray(course.skills) || 
+            !Array.isArray(course.prerequisites) || !course.price || !course.difficulty || 
+            !course.duration || !Array.isArray(course.roadmap)) {
+          console.error('Invalid course object:', course)
+          throw new Error('Invalid course object structure')
+        }
+        return course
+      })
+
       return new Response(
-        JSON.stringify(recommendations),
+        JSON.stringify({ courses: validatedCourses }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     } catch (parseError) {
       console.error('Error parsing Gemini response:', parseError)
-      throw new Error('Failed to parse Gemini response as JSON')
+      console.error('Failed to parse text:', rawText)
+      
+      // Return a more detailed error response
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to parse Gemini response as JSON',
+          details: parseError.message,
+          rawResponse: rawText
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
     }
   } catch (error) {
     console.error('Error:', error)
