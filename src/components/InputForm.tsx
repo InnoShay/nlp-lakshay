@@ -1,12 +1,26 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { BookOpen, Send, Target, GraduationCap, Upload, Loader2 } from "lucide-react";
+import { BookOpen, Send, Target, GraduationCap, Upload, Loader2, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface Course {
+  title: string;
+  description: string;
+  skills: string[];
+  prerequisites: string[];
+  price: string;
+  difficulty: string;
+  duration: string;
+  roadmap: string[];
+}
+
+interface DeepseekResponse {
+  courses: Course[];
+}
 
 export const InputForm = () => {
   const [education, setEducation] = useState("");
@@ -44,7 +58,7 @@ export const InputForm = () => {
 
       // Get course recommendations from Deepseek
       const { data: recommendations, error: apiError } = await supabase.functions
-        .invoke('generate-recommendations', {
+        .invoke<DeepseekResponse>('generate-recommendations', {
           body: { education, goals, fileContent },
         });
 

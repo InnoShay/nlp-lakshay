@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X } from "lucide-react";
+import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X, GraduationCap, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface Recommendation {
