@@ -1,6 +1,8 @@
+
 import { Hero } from "@/components/Hero";
 import { InputForm } from "@/components/InputForm";
 import { Footer } from "@/components/Footer";
+import { Chatbot } from "@/components/Chatbot";
 
 const Index = () => {
   return (
@@ -8,6 +10,7 @@ const Index = () => {
       <Hero />
       <InputForm />
       <Footer />
+      <Chatbot />
     </div>
   );
 };

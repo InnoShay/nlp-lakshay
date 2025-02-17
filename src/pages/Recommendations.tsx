@@ -1,11 +1,18 @@
-
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X, GraduationCap, Check } from "lucide-react";
+import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useTheme } from "next-themes";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 interface Recommendation {
   title: string;
@@ -17,14 +24,17 @@ interface Recommendation {
   difficulty: string;
   duration: string;
   roadmap: string[];
+  feedback?: 'like' | 'dislike';
 }
 
 const Recommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
+  const [sortBy, setSortBy] = useState<string>("similarity");
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     setMounted(true);
@@ -35,6 +45,35 @@ const Recommendations = () => {
     }
     setRecommendations(JSON.parse(storedRecs));
   }, [navigate]);
+
+  const handleSort = (value: string) => {
+    setSortBy(value);
+    const sorted = [...recommendations].sort((a, b) => {
+      switch (value) {
+        case "similarity":
+          return b.similarity_score - a.similarity_score;
+        case "difficulty":
+          const order = { beginner: 1, intermediate: 2, advanced: 3 };
+          return (order[a.difficulty.toLowerCase() as keyof typeof order] || 0) - 
+                 (order[b.difficulty.toLowerCase() as keyof typeof order] || 0);
+        default:
+          return 0;
+      }
+    });
+    setRecommendations(sorted);
+  };
+
+  const handleFeedback = (index: number, type: 'like' | 'dislike') => {
+    const updatedRecs = [...recommendations];
+    updatedRecs[index] = { ...updatedRecs[index], feedback: type };
+    setRecommendations(updatedRecs);
+    localStorage.setItem("recommendations", JSON.stringify(updatedRecs));
+    
+    toast({
+      title: "Thank you for your feedback!",
+      description: "Your input helps us improve our recommendations.",
+    });
+  };
 
   if (!mounted) return null;
 
@@ -54,7 +93,17 @@ const Recommendations = () => {
   return (
     <div className="min-h-screen bg-background py-20 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-4">
+          <Select onValueChange={handleSort} defaultValue="similarity">
+            <SelectTrigger className="w-[180px] bg-background/50 backdrop-blur-sm border-primary/20">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="similarity">Best Match</SelectItem>
+              <SelectItem value="difficulty">Difficulty</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <Button
             variant="outline"
             size="icon"
@@ -90,8 +139,6 @@ const Recommendations = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              onClick={() => setSelectedCourse(rec)}
-              className="cursor-pointer"
             >
               <Card className="glass-card p-6 hover:scale-105 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
@@ -140,6 +187,25 @@ const Recommendations = () => {
                       </span>
                     ))}
                   </div>
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`rounded-full ${rec.feedback === 'like' ? 'bg-green-500/20' : ''}`}
+                    onClick={() => handleFeedback(index, 'like')}
+                  >
+                    <ThumbsUp className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`rounded-full ${rec.feedback === 'dislike' ? 'bg-red-500/20' : ''}`}
+                    onClick={() => handleFeedback(index, 'dislike')}
+                  >
+                    <ThumbsDown className="w-4 h-4" />
+                  </Button>
                 </div>
               </Card>
             </motion.div>
