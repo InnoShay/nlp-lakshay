@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { BookOpen, Send, Target, GraduationCap } from "lucide-react";
+import { BookOpen, Send, Target, GraduationCap, Upload, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,33 +11,52 @@ import { supabase } from "@/integrations/supabase/client";
 export const InputForm = () => {
   const [education, setEducation] = useState("");
   const [goals, setGoals] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const readFileContent = async (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target?.result as string);
+      };
+      reader.readAsText(file);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // For now, we'll fetch all courses and do a simple matching
-      // In a real recommendation system, you'd want more sophisticated matching
-      const { data: courses, error } = await supabase
-        .from('courses')
-        .select('*');
+      let fileContent = '';
+      if (file) {
+        fileContent = await readFileContent(file);
+      }
 
-      if (error) throw error;
+      // Get course recommendations from Deepseek
+      const { data: recommendations, error: apiError } = await supabase.functions
+        .invoke('generate-recommendations', {
+          body: { education, goals, fileContent },
+        });
 
-      // Simple matching based on skills and prerequisites
-      const recommendations = courses
-        .map(course => ({
-          ...course,
-          similarity_score: calculateSimilarity(course, education, goals)
-        }))
-        .sort((a, b) => b.similarity_score - a.similarity_score)
-        .slice(0, 3); // Get top 3 recommendations
+      if (apiError) throw apiError;
 
-      localStorage.setItem("recommendations", JSON.stringify(recommendations));
+      // Calculate similarity scores for the recommendations
+      const recommendationsWithScores = recommendations.courses.map(course => ({
+        ...course,
+        similarity_score: calculateSimilarity(course, education, goals),
+      }));
+
+      localStorage.setItem("recommendations", JSON.stringify(recommendationsWithScores));
       navigate("/recommendations");
     } catch (error) {
       console.error('Error:', error);
@@ -51,12 +70,10 @@ export const InputForm = () => {
     }
   };
 
-  // Simple similarity calculation based on keyword matching
   const calculateSimilarity = (course: any, education: string, goals: string) => {
     const combinedUserInput = (education + " " + goals).toLowerCase();
-    const courseText = (course.title + " " + course.description + " " + course.skills).toLowerCase();
+    const courseText = (course.title + " " + course.description + " " + course.skills.join(" ")).toLowerCase();
     
-    // Count how many course keywords appear in user input
     const courseWords = courseText.split(/\W+/);
     const matchingWords = courseWords.filter(word => 
       word.length > 3 && combinedUserInput.includes(word)
@@ -109,6 +126,24 @@ export const InputForm = () => {
                 required
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-2 flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Upload Resume/CV (Optional)
+              </label>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".txt,.pdf,.doc,.docx"
+                className="w-full bg-background/50 dark:bg-white/5 border border-primary/20 rounded-lg p-2"
+              />
+              {file && (
+                <p className="text-sm text-foreground/70 mt-2">
+                  Selected file: {file.name}
+                </p>
+              )}
+            </div>
             
             <Button 
               type="submit"
@@ -116,8 +151,17 @@ export const InputForm = () => {
               className="w-full bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 text-white rounded-xl py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
               size="lg"
             >
-              {isLoading ? "Getting Recommendations..." : "Get Recommendations"}
-              <Send className="w-5 h-5" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Getting Recommendations...
+                </>
+              ) : (
+                <>
+                  Get Recommendations
+                  <Send className="w-5 h-5" />
+                </>
+              )}
             </Button>
           </div>
         </motion.form>

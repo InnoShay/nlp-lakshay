@@ -1,21 +1,27 @@
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, ArrowLeft, Sun, Moon } from "lucide-react";
+import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface Recommendation {
   title: string;
   similarity_score: number;
   description: string;
-  skills: string;
+  skills: string[];
+  prerequisites: string[];
+  price: string;
+  difficulty: string;
+  duration: string;
+  roadmap: string[];
 }
 
 const Recommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -31,6 +37,19 @@ const Recommendations = () => {
   }, [navigate]);
 
   if (!mounted) return null;
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty.toLowerCase()) {
+      case 'beginner':
+        return 'text-green-500';
+      case 'intermediate':
+        return 'text-yellow-500';
+      case 'advanced':
+        return 'text-red-500';
+      default:
+        return 'text-primary';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background py-20 px-4">
@@ -71,6 +90,8 @@ const Recommendations = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
+              onClick={() => setSelectedCourse(rec)}
+              className="cursor-pointer"
             >
               <Card className="glass-card p-6 hover:scale-105 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
@@ -85,15 +106,37 @@ const Recommendations = () => {
                   </div>
                 </div>
                 <p className="text-muted-foreground mb-4">{rec.description}</p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{rec.duration}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{rec.price}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-primary" />
+                    <span className={`text-sm ${getDifficultyColor(rec.difficulty)}`}>
+                      {rec.difficulty}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{rec.prerequisites.length} prerequisites</span>
+                  </div>
+                </div>
+
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium text-foreground/90">Key Skills:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {rec.skills.split(",").map((skill, i) => (
+                    {rec.skills.map((skill, i) => (
                       <span
                         key={i}
                         className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
                       >
-                        {skill.trim()}
+                        {skill}
                       </span>
                     ))}
                   </div>
@@ -102,6 +145,60 @@ const Recommendations = () => {
             </motion.div>
           ))}
         </div>
+
+        <AnimatePresence>
+          {selectedCourse && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setSelectedCourse(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                className="bg-background rounded-xl p-6 max-w-2xl w-full glass-card"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <h2 className="text-2xl font-bold gradient-text">{selectedCourse.title}</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedCourse(null)}
+                    className="rounded-full hover:bg-primary/10"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-primary">Learning Roadmap</h3>
+                  <div className="space-y-4">
+                    {selectedCourse.roadmap.map((step, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-4"
+                      >
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-primary font-medium">{index + 1}</span>
+                        </div>
+                        <div className="flex-grow">
+                          <p className="text-foreground">{step}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.div
           initial={{ opacity: 0 }}
