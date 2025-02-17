@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { education, goals, fileContent } = await req.json()
 
-    // Prepare the prompt for Deepseek
+    // Prepare the prompt for OpenAI
     const prompt = `Based on the following information, recommend 8 most suitable courses with detailed information:
     
     Education Background: ${education}
@@ -37,37 +37,36 @@ serve(async (req) => {
     
     Ensure each course is highly relevant to the user's background and goals. Include a comprehensive roadmap for each course.`
 
-    console.log('Making API request to Deepseek...')
+    console.log('Making API request to OpenAI...')
 
-    // Call Deepseek API with the correct endpoint
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    // Call OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('DEEPSEEK_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
-        model: "deepseek-chat",
+        model: "gpt-3.5-turbo",
         temperature: 0.6,
         max_tokens: 4096,
-        top_p: 0.95,
       }),
     })
 
     if (!response.ok) {
-      console.error('Deepseek API error:', response.status, response.statusText)
+      console.error('OpenAI API error:', response.status, response.statusText)
       const errorBody = await response.text()
       console.error('Error body:', errorBody)
-      throw new Error(`Deepseek API request failed: ${response.statusText}`)
+      throw new Error(`OpenAI API request failed: ${response.statusText}`)
     }
 
     const data = await response.json()
-    console.log('Deepseek API response:', JSON.stringify(data))
+    console.log('OpenAI API response:', JSON.stringify(data))
 
     if (!data || !data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-      console.error('Invalid response format from Deepseek:', data)
-      throw new Error('Invalid response format from Deepseek API')
+      console.error('Invalid response format from OpenAI:', data)
+      throw new Error('Invalid response format from OpenAI API')
     }
 
     try {
@@ -83,8 +82,8 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     } catch (parseError) {
-      console.error('Error parsing Deepseek response:', parseError)
-      throw new Error('Failed to parse Deepseek response as JSON')
+      console.error('Error parsing OpenAI response:', parseError)
+      throw new Error('Failed to parse OpenAI response as JSON')
     }
   } catch (error) {
     console.error('Error:', error)
