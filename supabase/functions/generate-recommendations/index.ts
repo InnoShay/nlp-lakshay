@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { education, goals, fileContent } = await req.json()
 
-    // Prepare the prompt for OpenAI
+    // Prepare the prompt for Gemini
     const prompt = `Based on the following information, recommend 8 most suitable courses with detailed information:
     
     Education Background: ${education}
@@ -37,40 +37,45 @@ serve(async (req) => {
     
     Ensure each course is highly relevant to the user's background and goals. Include a comprehensive roadmap for each course.`
 
-    console.log('Making API request to OpenAI...')
+    console.log('Making API request to Gemini...')
 
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
+        'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') || '',
       },
       body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        model: "gpt-3.5-turbo",
-        temperature: 0.6,
-        max_tokens: 4096,
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens: 4096,
+        },
       }),
     })
 
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status, response.statusText)
+      console.error('Gemini API error:', response.status, response.statusText)
       const errorBody = await response.text()
       console.error('Error body:', errorBody)
-      throw new Error(`OpenAI API request failed: ${response.statusText}`)
+      throw new Error(`Gemini API request failed: ${response.statusText}`)
     }
 
     const data = await response.json()
-    console.log('OpenAI API response:', JSON.stringify(data))
+    console.log('Gemini API response:', JSON.stringify(data))
 
-    if (!data || !data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-      console.error('Invalid response format from OpenAI:', data)
-      throw new Error('Invalid response format from OpenAI API')
+    if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+      console.error('Invalid response format from Gemini:', data)
+      throw new Error('Invalid response format from Gemini API')
     }
 
     try {
-      const recommendations = JSON.parse(data.choices[0].message.content)
+      const recommendations = JSON.parse(data.candidates[0].content.parts[0].text)
 
       if (!recommendations || !recommendations.courses || !Array.isArray(recommendations.courses)) {
         console.error('Invalid recommendations format:', recommendations)
@@ -82,8 +87,8 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError)
-      throw new Error('Failed to parse OpenAI response as JSON')
+      console.error('Error parsing Gemini response:', parseError)
+      throw new Error('Failed to parse Gemini response as JSON')
     }
   } catch (error) {
     console.error('Error:', error)
