@@ -39,8 +39,8 @@ serve(async (req) => {
 
     console.log('Making API request to Deepseek...')
 
-    // Call Deepseek API
-    const response = await fetch('https://api.groq.com/v1/chat/completions', {
+    // Call Deepseek API with the correct endpoint
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('DEEPSEEK_API_KEY')}`,
@@ -48,7 +48,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
-        model: "deepseek-r1-distill-llama-70b",
+        model: "deepseek-chat",
         temperature: 0.6,
         max_tokens: 4096,
         top_p: 0.95,
