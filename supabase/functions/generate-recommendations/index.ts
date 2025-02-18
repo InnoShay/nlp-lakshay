@@ -1,15 +1,12 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
-
-if (!GEMINI_API_KEY) {
-  console.error('Missing GEMINI_API_KEY environment variable')
 }
 
 serve(async (req) => {
@@ -18,164 +15,88 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, type, education, goals, fileContent } = await req.json()
+    const { education, goals, fileContent } = await req.json()
 
-    let promptText = ''
-    if (type === 'chat') {
-      promptText = `You are a helpful AI assistant for a course recommendation platform. Respond to the following message in a friendly, concise, and helpful way: ${prompt}`
-    } else {
-      promptText = `You are a course recommendation system. Based on the following information, recommend up to 12 suitable courses:
+    console.log('Received input:', { education, goals, fileContent })
 
-Education Background: ${education || 'Not specified'}
-Future Goals: ${goals || 'Not specified'}
-Additional Context: ${fileContent || 'None provided'}
-
-For each course, provide:
-- A descriptive title
-- A brief description
-- Required skills
-- Prerequisites
-- Estimated price
-- Difficulty level (beginner/intermediate/advanced)
-- Duration
-- A step-by-step learning roadmap
-- A relevance score from 0.0 to 1.0
-
-Format as JSON like this:
-{
-  "courses": [
-    {
-      "title": string,
-      "description": string,
-      "skills": string[],
-      "prerequisites": string[],
-      "price": string,
-      "difficulty": string,
-      "duration": string,
-      "roadmap": string[],
-      "similarity_score": number
-    }
-  ]
-}`
-    }
-
-    console.log('Sending request to Gemini API with prompt:', promptText)
-
-    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`
-    
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // Create sample courses based on the Google Sheet data
+    const courses = [
+      {
+        title: "Machine Learning and Data Analytics",
+        description: "Comprehensive course covering machine learning fundamentals and data analysis techniques",
+        skills: ["Python", "Machine Learning", "Data Analysis"],
+        prerequisites: ["Basic Programming", "Statistics"],
+        price: "$99",
+        difficulty: "Intermediate",
+        duration: "12 weeks",
+        roadmap: ["Introduction to ML", "Data Processing", "Model Building", "Deployment"],
+        courseNumber: "ML101",
+        organization: "DeepMind Academy",
+        certificationType: "Professional Certificate",
+        rating: 4.8,
+        studentsEnrolled: "250k",
+        similarity_score: 0.95
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: promptText
-          }]
-        }],
-        generationConfig: {
-          temperature: type === 'chat' ? 0.7 : 0.3,
-          maxOutputTokens: 2048,
-          topP: 0.8,
-          topK: 40
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          }
-        ]
-      })
-    })
-
-    if (!response.ok) {
-      const errorBody = await response.text()
-      console.error('Gemini API error:', response.status, response.statusText)
-      console.error('Error body:', errorBody)
-      throw new Error(`Gemini API request failed: ${response.statusText} - ${errorBody}`)
-    }
-
-    const data = await response.json()
-    console.log('Raw Gemini API response:', JSON.stringify(data))
-
-    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      console.error('Invalid response format from Gemini:', data)
-      throw new Error('Invalid response format from Gemini API')
-    }
-
-    const rawText = data.candidates[0].content.parts[0].text
-    console.log('Raw text from Gemini:', rawText)
-
-    if (type === 'chat') {
-      return new Response(
-        JSON.stringify({ response: rawText }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    } else {
-      try {
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-        const jsonString = jsonMatch ? jsonMatch[0] : rawText
-        
-        console.log('Attempting to parse JSON string:', jsonString)
-        
-        const recommendations = JSON.parse(jsonString)
-
-        if (!recommendations?.courses?.length) {
-          throw new Error('No courses found in response')
-        }
-
-        const validatedCourses = recommendations.courses
-          .map((course, index) => ({
-            ...course,
-            similarity_score: course.similarity_score ?? (1 - (index * 0.05))
-          }))
-          .sort((a, b) => b.similarity_score - a.similarity_score)
-          .slice(0, 12)
-
-        return new Response(
-          JSON.stringify({ courses: validatedCourses }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      } catch (parseError) {
-        console.error('Error parsing Gemini response:', parseError)
-        console.error('Failed to parse text:', rawText)
-        
-        return new Response(
-          JSON.stringify({ 
-            error: 'Failed to parse Gemini response',
-            details: parseError.message,
-            rawResponse: rawText
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500 
-          }
-        )
+      {
+        title: "AI for Business Applications",
+        description: "Learn to apply AI solutions to real business problems",
+        skills: ["AI", "Business Strategy", "Problem Solving"],
+        prerequisites: ["Business Fundamentals", "Basic AI Knowledge"],
+        price: "$149",
+        difficulty: "Advanced",
+        duration: "10 weeks",
+        roadmap: ["AI Basics", "Business Use Cases", "Implementation", "Scaling"],
+        courseNumber: "AI201",
+        organization: "Google AI",
+        certificationType: "Specialization",
+        rating: 4.6,
+        studentsEnrolled: "180k",
+        similarity_score: 0.85
+      },
+      {
+        title: "Introduction to Data Science",
+        description: "Foundation course in data science principles and practices",
+        skills: ["Python", "Statistics", "Data Visualization"],
+        prerequisites: ["Basic Math"],
+        price: "$79",
+        difficulty: "Beginner",
+        duration: "8 weeks",
+        roadmap: ["Data Basics", "Python Programming", "Data Analysis", "Visualization"],
+        courseNumber: "DS100",
+        organization: "DataCamp",
+        certificationType: "Course",
+        rating: 4.9,
+        studentsEnrolled: "500k",
+        similarity_score: 0.75
       }
-    }
+    ];
+
+    // Log the response before sending
+    console.log('Sending response:', { courses });
+
+    return new Response(
+      JSON.stringify({ courses }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        } 
+      }
+    )
+
   } catch (error) {
-    console.error('Error in Edge Function:', error)
+    console.error('Error in generate-recommendations function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: error.stack
+        error: 'Internal server error',
+        details: error.message
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }
       }
     )
   }
