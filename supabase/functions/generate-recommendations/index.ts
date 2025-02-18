@@ -14,17 +14,16 @@ serve(async (req) => {
   try {
     const { prompt, type, education, goals, fileContent } = await req.json()
 
-    // Different prompt based on request type
     let promptText = ''
     if (type === 'chat') {
       promptText = `You are a helpful AI assistant for a course recommendation platform. 
       Respond to the following message in a friendly, concise, and helpful way: ${prompt}`
     } else {
-      promptText = `You are a course recommendation system. Based on the following information, recommend 8 most suitable courses. 
+      promptText = `You are a course recommendation system. Based on the following information, recommend 12 most suitable courses. Each course must have a detailed roadmap with at least 5 steps for completion. 
       
-      Education Background: ${education}
-      Future Goals: ${goals}
-      Additional Information: ${fileContent || 'No additional documents provided'}
+      Education Background: ${education || 'Not specified'}
+      Future Goals: ${goals || 'Not specified'}
+      Additional Information: ${fileContent ? 'Document content: ' + fileContent : 'No additional documents provided'}
       
       IMPORTANT: Your response must be strictly formatted as a valid JSON object with this exact structure:
       {
@@ -37,12 +36,18 @@ serve(async (req) => {
             "price": "string",
             "difficulty": "beginner/intermediate/advanced",
             "duration": "string",
-            "roadmap": ["string"]
+            "roadmap": ["string"],
+            "similarity_score": number
           }
         ]
       }
       
-      DO NOT include any additional text, explanations, or formatting - ONLY the JSON object.`
+      For each course:
+      1. Add a detailed roadmap with at least 5 clear steps
+      2. Calculate a similarity_score (0.0 to 1.0) based on how well it matches the user's background and goals
+      3. Ensure all fields are properly filled
+      
+      Return ONLY the JSON object with no additional text or formatting.`
     }
 
     console.log('Making API request to Gemini with prompt:', promptText)
@@ -84,7 +89,6 @@ serve(async (req) => {
     const rawText = data.candidates[0].content.parts[0].text
     console.log('Raw text from Gemini:', rawText)
 
-    // Handle different response types
     if (type === 'chat') {
       return new Response(
         JSON.stringify({ response: rawText }),
@@ -104,18 +108,14 @@ serve(async (req) => {
           throw new Error('Invalid recommendations structure')
         }
 
-        const validatedCourses = recommendations.courses.map(course => {
-          if (!course.title || !course.description || !Array.isArray(course.skills) || 
-              !Array.isArray(course.prerequisites) || !course.price || !course.difficulty || 
-              !course.duration || !Array.isArray(course.roadmap)) {
-            console.error('Invalid course object:', course)
-            throw new Error('Invalid course object structure')
-          }
-          return course
-        })
+        // Add default similarity score if not present
+        const validatedCourses = recommendations.courses.map((course, index) => ({
+          ...course,
+          similarity_score: course.similarity_score || (1 - (index * 0.05)),
+        })).sort((a, b) => b.similarity_score - a.similarity_score);
 
         return new Response(
-          JSON.stringify({ courses: validatedCourses }),
+          JSON.stringify({ courses: validatedCourses.slice(0, 12) }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       } catch (parseError) {

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -43,7 +44,11 @@ const Recommendations = () => {
       navigate("/");
       return;
     }
-    setRecommendations(JSON.parse(storedRecs));
+    const parsedRecs = JSON.parse(storedRecs);
+    // Sort by similarity score by default
+    setRecommendations(parsedRecs.sort((a: Recommendation, b: Recommendation) => 
+      b.similarity_score - a.similarity_score
+    ));
   }, [navigate]);
 
   const handleSort = (value: string) => {
@@ -75,8 +80,6 @@ const Recommendations = () => {
     });
   };
 
-  if (!mounted) return null;
-
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
       case 'beginner':
@@ -89,6 +92,8 @@ const Recommendations = () => {
         return 'text-primary';
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-background py-20 px-4">
@@ -142,7 +147,10 @@ const Recommendations = () => {
             >
               <Card className="glass-card p-6 hover:scale-105 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-foreground">
+                  <h3 
+                    className="text-xl font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => setSelectedCourse(rec)}
+                  >
                     {rec.title}
                   </h3>
                   <div className="flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
@@ -254,7 +262,10 @@ const Recommendations = () => {
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-primary font-medium">{index + 1}</span>
                         </div>
-                        <div className="flex-grow">
+                        <div className="flex-grow relative pl-4 pb-4">
+                          {index < selectedCourse.roadmap.length - 1 && (
+                            <div className="absolute left-0 top-8 bottom-0 w-0.5 bg-primary/20" />
+                          )}
                           <p className="text-foreground">{step}</p>
                         </div>
                       </motion.div>
