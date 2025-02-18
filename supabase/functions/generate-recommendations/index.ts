@@ -61,11 +61,12 @@ Format as JSON like this:
 
     console.log('Sending request to Gemini API with prompt:', promptText)
 
-    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent', {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GEMINI_API_KEY}`,
       },
       body: JSON.stringify({
         contents: [{
