@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Star, ArrowLeft, Sun, Moon, Clock, Users, BookOpen, Target, X, ThumbsUp, ThumbsDown, Award, Bookmark } from "lucide-react";
+import { Star, ArrowLeft, Sun, Moon, Clock, DollarSign, BookOpen, Target, X, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   Select,
@@ -25,11 +25,6 @@ interface Recommendation {
   difficulty: string;
   duration: string;
   roadmap: string[];
-  courseNumber: string;
-  organization: string;
-  certificationType: string;
-  rating: number;
-  studentsEnrolled: string;
   feedback?: 'like' | 'dislike';
 }
 
@@ -93,8 +88,6 @@ const Recommendations = () => {
         return 'text-yellow-500';
       case 'advanced':
         return 'text-red-500';
-      case 'mixed':
-        return 'text-blue-500';
       default:
         return 'text-primary';
     }
@@ -154,36 +147,20 @@ const Recommendations = () => {
             >
               <Card className="glass-card p-6 hover:scale-105 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="text-xs text-primary/80 mb-1">#{rec.courseNumber}</p>
-                    <h3 
-                      className="text-xl font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
-                      onClick={() => setSelectedCourse(rec)}
-                    >
-                      {rec.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                      <Bookmark className="w-4 h-4" />
-                      {rec.organization}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
-                      <Star className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium text-primary">
-                        {(rec.similarity_score * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1.5 rounded-full">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-medium text-yellow-500">
-                        {rec.rating}
-                      </span>
-                    </div>
+                  <h3 
+                    className="text-xl font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => setSelectedCourse(rec)}
+                  >
+                    {rec.title}
+                  </h3>
+                  <div className="flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-full">
+                    <Star className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">
+                      {(rec.similarity_score * 100).toFixed(0)}%
+                    </span>
                   </div>
                 </div>
-
-                <p className="text-muted-foreground mb-4 line-clamp-2">{rec.description}</p>
+                <p className="text-muted-foreground mb-4">{rec.description}</p>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-2">
@@ -191,8 +168,8 @@ const Recommendations = () => {
                     <span className="text-sm">{rec.duration}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{rec.studentsEnrolled}</span>
+                    <DollarSign className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{rec.price}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-primary" />
@@ -201,20 +178,20 @@ const Recommendations = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{rec.certificationType}</span>
+                    <BookOpen className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{rec.prerequisites.length} prerequisites</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-foreground/90">Prerequisites:</h4>
+                  <h4 className="text-sm font-medium text-foreground/90">Key Skills:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {rec.prerequisites.map((prereq, i) => (
+                    {rec.skills.map((skill, i) => (
                       <span
                         key={i}
                         className="bg-primary/5 text-primary px-3 py-1 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
                       >
-                        {prereq}
+                        {skill}
                       </span>
                     ))}
                   </div>

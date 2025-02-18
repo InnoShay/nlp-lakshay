@@ -1,131 +1,15 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Full dataset from Google Sheets
-const dataset = [
-  {
-    courseNumber: "AI101",
-    title: "Foundations of Artificial Intelligence",
-    description: "Comprehensive introduction to AI concepts and applications",
-    organization: "MIT OpenCourseWare",
-    certificationType: "Professional Certificate",
-    rating: 4.9,
-    difficulty: "Beginner",
-    studentsEnrolled: "680k",
-    prerequisites: ["Basic Programming", "Mathematics"],
-    skills: ["AI Fundamentals", "Python", "Machine Learning Basics"],
-    price: "$99",
-    duration: "10 weeks",
-    roadmap: ["AI Fundamentals", "Machine Learning Basics", "Neural Networks", "AI Applications"]
-  },
-  {
-    courseNumber: "ML202",
-    title: "Applied Machine Learning",
-    description: "Hands-on machine learning with real-world applications",
-    organization: "Stanford Online",
-    certificationType: "Specialization",
-    rating: 4.8,
-    difficulty: "Intermediate",
-    studentsEnrolled: "450k",
-    prerequisites: ["Python Programming", "Basic Statistics"],
-    skills: ["Machine Learning", "Data Analysis", "Model Development"],
-    price: "$149",
-    duration: "12 weeks",
-    roadmap: ["ML Fundamentals", "Supervised Learning", "Unsupervised Learning", "Model Deployment"]
-  },
-  {
-    courseNumber: "DL303",
-    title: "Deep Learning Specialization",
-    description: "Advanced deep learning concepts and neural networks",
-    organization: "DeepLearning.AI",
-    certificationType: "Professional Certificate",
-    rating: 4.9,
-    difficulty: "Advanced",
-    studentsEnrolled: "320k",
-    prerequisites: ["Machine Learning", "Advanced Mathematics"],
-    skills: ["Deep Learning", "Neural Networks", "TensorFlow"],
-    price: "$199",
-    duration: "16 weeks",
-    roadmap: ["Deep Learning Basics", "CNN", "RNN", "Transformers"]
-  },
-  {
-    courseNumber: "DS101",
-    title: "Data Science Essentials",
-    description: "Fundamental concepts of data science and analytics",
-    organization: "IBM Professional",
-    certificationType: "Course",
-    rating: 4.7,
-    difficulty: "Beginner",
-    studentsEnrolled: "550k",
-    prerequisites: ["Basic Mathematics"],
-    skills: ["Data Analysis", "Python", "Statistics"],
-    price: "$79",
-    duration: "8 weeks",
-    roadmap: ["Data Basics", "Statistical Analysis", "Data Visualization", "Basic ML"]
-  },
-  {
-    courseNumber: "CV401",
-    title: "Computer Vision Applications",
-    description: "Advanced computer vision and image processing",
-    organization: "Google AI",
-    certificationType: "Specialization",
-    rating: 4.8,
-    difficulty: "Advanced",
-    studentsEnrolled: "180k",
-    prerequisites: ["Deep Learning", "Python Programming"],
-    skills: ["Computer Vision", "OpenCV", "Deep Learning"],
-    price: "$179",
-    duration: "14 weeks",
-    roadmap: ["Image Processing", "Object Detection", "Image Segmentation", "Applications"]
-  }
-];
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 
-function calculateSimilarityScore(course: any, userInput: { education: string, goals: string }): number {
-  const { education, goals } = userInput;
-  let score = 0;
-  const inputText = (education + " " + goals).toLowerCase();
-
-  // Match based on course title and description
-  if (course.title.toLowerCase().includes(inputText) || 
-      course.description.toLowerCase().includes(inputText)) {
-    score += 0.3;
-  }
-
-  // Match based on skills
-  const skillsMatch = course.skills.some((skill: string) => 
-    inputText.includes(skill.toLowerCase())
-  );
-  if (skillsMatch) score += 0.2;
-
-  // Match based on difficulty level
-  const difficultyTerms = {
-    beginner: ["new", "start", "basic", "fundamental", "introduction"],
-    intermediate: ["intermediate", "some experience", "familiar"],
-    advanced: ["advanced", "expert", "professional"]
-  };
-
-  const userLevel = Object.entries(difficultyTerms).find(([level, terms]) =>
-    terms.some(term => inputText.includes(term))
-  )?.[0] || "beginner";
-
-  if (course.difficulty.toLowerCase() === userLevel) {
-    score += 0.2;
-  }
-
-  // Match based on prerequisites
-  const prereqMatch = course.prerequisites.some((prereq: string) =>
-    inputText.includes(prereq.toLowerCase())
-  );
-  if (prereqMatch) score += 0.2;
-
-  // Normalize score to be between 0 and 1
-  return Math.min(Math.max(score, 0.1), 1);
+if (!GEMINI_API_KEY) {
+  console.error('Missing GEMINI_API_KEY environment variable')
 }
 
 serve(async (req) => {
@@ -134,45 +18,164 @@ serve(async (req) => {
   }
 
   try {
-    const { education, goals } = await req.json();
-    console.log('Analyzing user input:', { education, goals });
+    const { prompt, type, education, goals, fileContent } = await req.json()
 
-    // Calculate similarity scores for each course
-    const coursesWithScores = dataset.map(course => ({
-      ...course,
-      similarity_score: calculateSimilarityScore(course, { education, goals })
-    }));
+    let promptText = ''
+    if (type === 'chat') {
+      promptText = `You are a helpful AI assistant for a course recommendation platform. Respond to the following message in a friendly, concise, and helpful way: ${prompt}`
+    } else {
+      promptText = `You are a course recommendation system. Based on the following information, recommend up to 12 suitable courses:
 
-    // Sort by similarity score and filter out low-relevance courses
-    const recommendedCourses = coursesWithScores
-      .filter(course => course.similarity_score > 0.2)
-      .sort((a, b) => b.similarity_score - a.similarity_score);
+Education Background: ${education || 'Not specified'}
+Future Goals: ${goals || 'Not specified'}
+Additional Context: ${fileContent || 'None provided'}
 
-    console.log(`Found ${recommendedCourses.length} relevant courses`);
+For each course, provide:
+- A descriptive title
+- A brief description
+- Required skills
+- Prerequisites
+- Estimated price
+- Difficulty level (beginner/intermediate/advanced)
+- Duration
+- A step-by-step learning roadmap
+- A relevance score from 0.0 to 1.0
 
-    return new Response(
-      JSON.stringify({ courses: recommendedCourses }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json'
-        } 
+Format as JSON like this:
+{
+  "courses": [
+    {
+      "title": string,
+      "description": string,
+      "skills": string[],
+      "prerequisites": string[],
+      "price": string,
+      "difficulty": string,
+      "duration": string,
+      "roadmap": string[],
+      "similarity_score": number
+    }
+  ]
+}`
+    }
+
+    console.log('Sending request to Gemini API with prompt:', promptText)
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: promptText
+          }]
+        }],
+        generationConfig: {
+          temperature: type === 'chat' ? 0.7 : 0.3,
+          maxOutputTokens: 2048,
+          topP: 0.8,
+          topK: 40
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
+      })
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.text()
+      console.error('Gemini API error:', response.status, response.statusText)
+      console.error('Error body:', errorBody)
+      throw new Error(`Gemini API request failed: ${response.statusText} - ${errorBody}`)
+    }
+
+    const data = await response.json()
+    console.log('Raw Gemini API response:', JSON.stringify(data))
+
+    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      console.error('Invalid response format from Gemini:', data)
+      throw new Error('Invalid response format from Gemini API')
+    }
+
+    const rawText = data.candidates[0].content.parts[0].text
+    console.log('Raw text from Gemini:', rawText)
+
+    if (type === 'chat') {
+      return new Response(
+        JSON.stringify({ response: rawText }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } else {
+      try {
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+        const jsonString = jsonMatch ? jsonMatch[0] : rawText
+        
+        console.log('Attempting to parse JSON string:', jsonString)
+        
+        const recommendations = JSON.parse(jsonString)
+
+        if (!recommendations?.courses?.length) {
+          throw new Error('No courses found in response')
+        }
+
+        const validatedCourses = recommendations.courses
+          .map((course, index) => ({
+            ...course,
+            similarity_score: course.similarity_score ?? (1 - (index * 0.05))
+          }))
+          .sort((a, b) => b.similarity_score - a.similarity_score)
+          .slice(0, 12)
+
+        return new Response(
+          JSON.stringify({ courses: validatedCourses }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (parseError) {
+        console.error('Error parsing Gemini response:', parseError)
+        console.error('Failed to parse text:', rawText)
+        
+        return new Response(
+          JSON.stringify({ 
+            error: 'Failed to parse Gemini response',
+            details: parseError.message,
+            rawResponse: rawText
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500 
+          }
+        )
       }
-    )
-
+    }
   } catch (error) {
-    console.error('Error in generate-recommendations function:', error);
+    console.error('Error in Edge Function:', error)
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message
+        error: error.message,
+        details: error.stack
       }),
       { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
       }
     )
   }
